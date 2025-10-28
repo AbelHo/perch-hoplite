@@ -98,13 +98,13 @@ def embed_unlabeled_audio(
             print('\tnum embeddings:', count)
 
     # Example embedding search
-    q = db.get_embedding(db.get_one_embedding_id())
-    results, scores = brutalism.brute_search(worker.db, query_embedding=q, search_list_size=128, score_fn=np.dot)
-    search_example = {
-        'embedding_ids': [int(r.embedding_id) for r in results],
-        'scores': scores.tolist() if hasattr(scores, 'tolist') else scores
-    }
-    if verbose:
-        print('Example search embedding ids:', search_example['embedding_ids'])
+    # q = db.get_embedding(db.get_one_embedding_id())
+    # results, scores = brutalism.brute_search(worker.db, query_embedding=q, search_list_size=128, score_fn=np.dot)
+    # search_example = {
+    #     'embedding_ids': [int(r.embedding_id) for r in results],
+    #     'scores': scores.tolist() if hasattr(scores, 'tolist') else scores
+    # }
+    # if verbose:
+    #     print('Example search embedding ids:', search_example['embedding_ids'])
 
-    return db, stats, search_example
+    return db, stats#, search_example
