@@ -265,7 +265,7 @@ def csv_worker_initializer(state: CsvWorkerState):
 def csv_worker_fn(
     embedding_ids: np.ndarray, logits: np.ndarray, state: CsvWorkerState
 ) -> None:
-  """Writes a CSV row for each detection.
+  """Writes a CSV row for each detection >threshold.
 
   Args:
     embedding_ids: The embedding ids to write.
@@ -280,10 +280,10 @@ def csv_worker_fn(
         lbl = state.labels[a[0]]
         row = [
             idx,
-            source.dataset_name,
-            source.source_id,
+            '"'+source.dataset_name+'"',
+            '"'+source.source_id+'"',
             source.offsets[0],
-            lbl,
+            '"'+lbl+'"',
             logit[a][0],
         ]
         f.write(','.join(map(str, row)) + '\n')
