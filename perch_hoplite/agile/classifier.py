@@ -19,7 +19,7 @@ import base64
 from concurrent import futures
 import dataclasses
 import json
-from typing import Any, Iterator, Sequence
+from typing import Any, Iterator, Sequence, Callable
 
 from etils import epath
 from ml_collections import config_dict
@@ -288,6 +288,33 @@ def csv_worker_fn(
         ]
         f.write(','.join(map(str, row)) + '\n')
 
+def csv_worker_fn_topk(
+    embedding_ids: np.ndarray, logits: np.ndarray, state: CsvWorkerState, k: int=1
+) -> None:
+  """Writes a CSV row for top (k) detections.
+
+  Args:
+    embedding_ids: The embedding ids to write.
+    logits: The logits for each embedding id.
+    state: The state of the worker.
+  """
+  db = state.get_thread_db()
+  with epath.Path(state.csv_filepath).open('a') as f:
+    for idx, logit in zip(embedding_ids, logits):
+      source = db.get_embedding_source(idx)
+      # print([np.argsort(logit)[-k:][::-1]])
+      for a in np.argsort(logit)[-k:][::-1]:
+        # print(a)
+        lbl = state.labels[a]
+        row = [
+            idx,
+            '"'+source.dataset_name+'"',
+            '"'+source.source_id+'"',
+            source.offsets[0],
+            '"'+lbl+'"',
+            logit[a],
+        ]
+        f.write(','.join(map(str, row)) + '\n')
 
 def batched_embedding_iterator(
     db: db_interface.HopliteDBInterface,
@@ -308,6 +335,7 @@ def write_inference_csv(
     threshold: float,
     labels: Sequence[str] | None = None,
     embedding_ids: np.ndarray | None = None,
+    csv_worker_fn: Callable[..., None] = csv_worker_fn,
 ) -> None:
   """Write a CSV for all audio windows with logits above a threshold."""
   if embedding_ids is None:
